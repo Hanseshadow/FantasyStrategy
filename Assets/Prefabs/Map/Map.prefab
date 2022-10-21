@@ -1,0 +1,66 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &7755954291408850495
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7755954291408850494}
+  - component: {fileID: 7755954291408850493}
+  m_Layer: 0
+  m_Name: Map
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7755954291408850494
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7755954291408850495}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &7755954291408850493
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7755954291408850495}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b94a5c63027d79a43a0ffd12550f6327, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  CurrentSize: 1
+  Resize: 0
+  TileTypes:
+  - {fileID: 5689235020872990735, guid: c8a6d652c6fc645468742f7918be6584, type: 3}
+  - {fileID: 8018994711276572643, guid: e101a853c83ab0d44be678eb8de93394, type: 3}
+  - {fileID: 8018994711276572643, guid: c984f80cfb375154e8a3cc8b9d8bb8cb, type: 3}
+  - {fileID: 8780745454358607407, guid: 0257b306e58674941827584152edc022, type: 3}
+  - {fileID: 8780745454358607407, guid: ea5e4432089facc44909d4712e84716a, type: 3}
+  - {fileID: 8780745454358607407, guid: 94e01a738bf5c9d4a9eefea01fa84752, type: 3}
+  - {fileID: 8780745454358607407, guid: e1e8f36b8af2c3c4e995a0a2134de5e2, type: 3}
+  - {fileID: 8780745454358607407, guid: 819b1799e00884f4a9ffca33e4721721, type: 3}
+  - {fileID: 5689235020872990735, guid: fc93b51f893a09646aae6754927afeaf, type: 3}
+  PerlinScale: 12
+  Elevation: 0.65
+  Passes: 4
+  Division: 2
+  Grassland: {fileID: 8780745454358607407, guid: 0257b306e58674941827584152edc022, type: 3}
+  DeepOcean: {fileID: 5689235020872990735, guid: c8a6d652c6fc645468742f7918be6584, type: 3}
+  Desert: {fileID: 8018994711276572643, guid: e101a853c83ab0d44be678eb8de93394, type: 3}
+  MainCamera: {fileID: 0}

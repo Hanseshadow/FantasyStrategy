@@ -12,6 +12,7 @@ public class GameManager : MonoBehaviour
     public GameObject GameScreen;
     public GameObject UnitUI;
     public GameObject MapCreation;
+    public GameObject Settings;
 
     public MapGrid MapGenerator;
 
@@ -30,20 +31,24 @@ public class GameManager : MonoBehaviour
     }
 
     public UIScreens ShownScreen = UIScreens.MainMenu;
+    public UIScreens LastScreen = UIScreens.MainMenu;
 
     void Start()
     {
         if(MainMenu != null)
-            ShowScreen(UIScreens.MainMenu);
+            ShowMainMenu();
     }
 
-    void Update()
+    public void ShowMainMenu()
     {
+        ShowScreen(UIScreens.MainMenu);
     }
 
     public void ShowScreen(UIScreens screen)
     {
         HideScreens();
+
+        LastScreen = ShownScreen;
 
         switch(screen)
         {
@@ -62,6 +67,10 @@ public class GameManager : MonoBehaviour
                 break;
             case UIScreens.MapCreation:
                 MapCreation.SetActive(true);
+                IsInUI = true;
+                break;
+            case UIScreens.Settings:
+                Settings.SetActive(true);
                 IsInUI = true;
                 break;
         }

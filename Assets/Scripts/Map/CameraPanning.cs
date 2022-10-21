@@ -7,7 +7,7 @@ public class CameraPanning : MonoBehaviour
     private GameManager GM;
     float minFov = 50f;
     float maxFov = 90f;
-    float sensitivity = 10f;
+    float sensitivity = 20f;
     Vector3 LastPosition;
 
     Vector3 MapSizeInMeters;

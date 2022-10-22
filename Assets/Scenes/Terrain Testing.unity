@@ -254,7 +254,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_RaycastTarget: 1
+  m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
@@ -1034,7 +1034,7 @@ MonoBehaviour:
     m_SelectedTrigger: Selected
     m_DisabledTrigger: Disabled
   m_Interactable: 1
-  m_TargetGraphic: {fileID: 0}
+  m_TargetGraphic: {fileID: 487289203}
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
@@ -2272,14 +2272,14 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 963194225}
-  m_LocalRotation: {x: 0.4622697, y: -0, z: -0, w: 0.8867394}
+  m_LocalRotation: {x: 0.5, y: 0, z: 0, w: 0.8660254}
   m_LocalPosition: {x: 0, y: 50, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 0
-  m_LocalEulerAnglesHint: {x: 55.067, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 60, y: 0, z: 0}
 --- !u!114 &963194229
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2479,10 +2479,22 @@ PrefabInstance:
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
       objectReference: {fileID: 712051594}
+    - target: {fileID: 7759052582819518215, guid: 7cb4fb63e91814d4da47cc32c2cf78cf, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 130
+      objectReference: {fileID: 0}
     - target: {fileID: 7759052583234947671, guid: 7cb4fb63e91814d4da47cc32c2cf78cf, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
       objectReference: {fileID: 712051594}
+    - target: {fileID: 7759052583234947672, guid: 7cb4fb63e91814d4da47cc32c2cf78cf, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: -40.807983
+      objectReference: {fileID: 0}
+    - target: {fileID: 7759052584253505768, guid: 7cb4fb63e91814d4da47cc32c2cf78cf, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 41.291992
+      objectReference: {fileID: 0}
     - target: {fileID: 7759052584532863147, guid: 7cb4fb63e91814d4da47cc32c2cf78cf, type: 3}
       propertyPath: m_Pivot.x
       value: 0
@@ -2866,7 +2878,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1625490807}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -180.5, y: -2, z: 0}
+  m_LocalPosition: {x: -157, y: 268, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:

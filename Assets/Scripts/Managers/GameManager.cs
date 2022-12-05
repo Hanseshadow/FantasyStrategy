@@ -15,6 +15,7 @@ public class GameManager : MonoBehaviour
     public GameObject Settings;
 
     public MapGrid MapGenerator;
+    public ArmyManager Armies;
 
     public enum UIScreens
     {
@@ -32,6 +33,8 @@ public class GameManager : MonoBehaviour
 
     public UIScreens ShownScreen = UIScreens.MainMenu;
     public UIScreens LastScreen = UIScreens.MainMenu;
+
+    public bool IsGamePaused = false;
 
     void Start()
     {
@@ -98,6 +101,11 @@ public class GameManager : MonoBehaviour
         {
             MapGenerator.BeginGeneration(this);
         }
+    }
+
+    public void LoadGame()
+    {
+
     }
 
     public void QuitGame()

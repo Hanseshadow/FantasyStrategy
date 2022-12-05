@@ -2,6 +2,15 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+[System.Serializable]
+public class MapData
+{
+    public MapGrid.MapSize CurrentSize = MapGrid.MapSize.Small;
+    public List<Tile> Tiles;
+    public int MapHeight = 0;
+    public int MapWidth = 0;
+}
+
 public class MapGrid : MonoBehaviour
 {
     public enum MapSize
@@ -19,7 +28,7 @@ public class MapGrid : MonoBehaviour
 
     public List<GameObject> TileTypes = new List<GameObject>();
 
-    List<GameObject> Tiles;
+    List<Tile> Tiles;
 
     private List<Tile> AllTileTypes = new List<Tile>();
 
@@ -28,18 +37,20 @@ public class MapGrid : MonoBehaviour
     public int Passes = 2;
     public float Division = 2f;
 
-    public GameObject Grassland;
-    public GameObject DeepOcean;
-    public GameObject Desert;
-
     public bool IsGenerating = false;
 
     public Camera MainCamera;
+
+    public GameObject GoldHexSelectionPrefab;
+
+    public GameObject GoldHexSelection;
 
     private int MapHeight = 0;
     private int MapWidth = 0;
     private Vector3 MainOffset;
     private Vector3 AlternateOffset;
+
+    private Vector3 SelectionOffset = new Vector3(0, 0.1f, 0);
 
     private GameManager GM;
 
@@ -78,7 +89,7 @@ public class MapGrid : MonoBehaviour
         MainOffset = new Vector3(15f, 0f, 5f);
         AlternateOffset = new Vector3(7.5f, 0f, 0f);
 
-        Tiles = new List<GameObject>();
+        Tiles = new List<Tile>();
 
         // Initialize what types of tiles can be placed
         foreach(GameObject go in TileTypes)
@@ -97,10 +108,10 @@ public class MapGrid : MonoBehaviour
 
     private void ClearTiles()
     {
-        foreach(GameObject go in Tiles)
+        foreach(Tile tile in Tiles)
         {
-            if(go != null)
-                Destroy(go);
+            if(tile != null && tile.gameObject != null)
+                Destroy(tile.gameObject);
         }
 
         Tiles.Clear();
@@ -194,7 +205,7 @@ public class MapGrid : MonoBehaviour
                     tile.Elevation = tileMap[i][j];
                 }
 
-                Tiles.Add(newTile);
+                Tiles.Add(tile);
 
                 passes++;
 
@@ -235,5 +246,20 @@ public class MapGrid : MonoBehaviour
     public Vector2 GetMapSizeInMeters()
     {
         return new Vector2((float)MapWidth * MainOffset.x, (float)MapHeight * MainOffset.z);
+    }
+
+    public void SelectTile(Tile tile)
+    {
+        if(tile == null)
+            return;
+
+        if(GoldHexSelection == null && GoldHexSelectionPrefab != null)
+        {
+            GoldHexSelection = Instantiate(GoldHexSelectionPrefab);
+        }
+
+        GoldHexSelection.transform.position = tile.transform.position + SelectionOffset;
+
+        GM.Armies.CreateUnit(tile);
     }
 }

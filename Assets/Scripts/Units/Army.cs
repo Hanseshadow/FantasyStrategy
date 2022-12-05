@@ -2,17 +2,31 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Army : MonoBehaviour
+[System.Serializable]
+public class ArmyData
 {
-    // Start is called before the first frame update
-    void Start()
+    public enum ArmyAlignments
     {
-        
+        None,
+        Friend,
+        Enemy,
+        Last
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
+    public int PlayerOwner = 0;
+
+    public int ArmyID = 0;
+
+    public Vector2 MapLocation = Vector2.zero;
+
+    public ArmyAlignments ArmyAlignment;
+}
+
+public class Army : MonoBehaviour
+{
+    public ArmyData Data;
+
+    public ArmyPortrait Portrait;
+
+    public GameObject ArmyOrientation;
 }

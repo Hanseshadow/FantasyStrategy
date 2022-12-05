@@ -37,13 +37,13 @@ public class CameraPanning : MonoBehaviour
         fov = Mathf.Clamp(fov, minFov, maxFov);
         Camera.main.fieldOfView = fov;
 
+        if(!Input.GetMouseButton(1) && !Input.GetKey(KeyCode.W) && !Input.GetKey(KeyCode.A) && !Input.GetKey(KeyCode.S) && !Input.GetKey(KeyCode.D))
+            return;
+
         if(Input.GetMouseButtonDown(1) || Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.S) || Input.GetKeyDown(KeyCode.D))
         {
             LastPosition = transform.position;
         }
-
-        if(!Input.GetMouseButton(1) && !Input.GetKey(KeyCode.W) && !Input.GetKey(KeyCode.A) && !Input.GetKey(KeyCode.S) && !Input.GetKey(KeyCode.D))
-            return;
 
         float cameraPositionX = LastPosition.x;
         float cameraPositionY = LastPosition.z;
@@ -75,13 +75,13 @@ public class CameraPanning : MonoBehaviour
         }
 
         if(cameraPositionX < 0f)
-            cameraPositionX = 0f;
+            cameraPositionX = MapSizeInMeters.x;
 
         if(cameraPositionY < -5f)
             cameraPositionY = -5f;
 
         if(cameraPositionX > MapSizeInMeters.x)
-            cameraPositionX = MapSizeInMeters.x;
+            cameraPositionX = 0;
 
         if(cameraPositionY > MapSizeInMeters.y - 100f)
             cameraPositionY = MapSizeInMeters.y - 100f;

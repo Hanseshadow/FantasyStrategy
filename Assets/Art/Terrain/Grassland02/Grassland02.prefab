@@ -133,7 +133,7 @@ MonoBehaviour:
   Feature: 0
   Movement: 1
   MinimumElevation: 0.67
-  MaximumElevation: 0.7999999
+  MaximumElevation: 0.75
   TilePrefab: {fileID: 8780745454358607407}
   Location: {x: 0, y: 0}
   Elevation: 0

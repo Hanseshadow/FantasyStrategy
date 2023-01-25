@@ -55,4 +55,6 @@ public class Tile : MonoBehaviour
     public Vector2 Location = Vector2.zero;
 
     public float Elevation = 0f;
+
+    public bool IsFakeTile = false;
 }

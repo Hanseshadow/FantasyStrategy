@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
+// What looks good?  An army with a face.
 public class ArmyPortrait : MonoBehaviour
 {
     public Image Portrait;

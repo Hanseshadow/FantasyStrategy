@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class CameraSelection : MonoBehaviour
+public class MapSelection : MonoBehaviour
 {
     Camera m_Camera;
     private GameManager GM;

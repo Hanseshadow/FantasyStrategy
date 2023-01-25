@@ -29,6 +29,9 @@ public class MapGrid : MonoBehaviour
     public List<GameObject> TileTypes = new List<GameObject>();
 
     List<Tile> Tiles;
+    List<Tile> FakeTiles;
+
+    public GameObject FakeTilesParent;
 
     private List<Tile> AllTileTypes = new List<Tile>();
 
@@ -44,6 +47,7 @@ public class MapGrid : MonoBehaviour
     public GameObject GoldHexSelectionPrefab;
 
     public GameObject GoldHexSelection;
+    public GameObject FakeGoldHexSelection;
 
     private int MapHeight = 0;
     private int MapWidth = 0;
@@ -162,9 +166,9 @@ public class MapGrid : MonoBehaviour
 
             float scale = PerlinScale / (h + 1) * Division;
 
-            for(int i = 0; i < MapHeight; i++)
+            for(int i = 0; i < MapWidth; i++)
             {
-                for(int j = 0; j < MapWidth; j++)
+                for(int j = 0; j < MapHeight; j++)
                 {
                     float elevation = Mathf.PerlinNoise((originX + (float)i) / (float)MapWidth * 2 * scale, (originY + (float)j) / (float)MapHeight * scale);
 
@@ -176,9 +180,9 @@ public class MapGrid : MonoBehaviour
 
         int passes = 0;
 
-        for(int i = 0; i < MapHeight; i++)
+        for(int i = 0; i < MapWidth; i++)
         {
-            for(int j = 0; j < MapWidth; j++)
+            for(int j = 0; j < MapHeight; j++)
             {
                 tilePrefab = null;
 
@@ -216,6 +220,83 @@ public class MapGrid : MonoBehaviour
                 }
             }
         }
+
+        ///////
+        // Fake map edges
+        ///////
+
+        // Left side
+
+        passes = 0;
+
+        Debug.Log("Left Side");
+
+        for(int i = MapWidth - 1; i > MapWidth - 20; i--)
+            for(int j = 0; j < MapHeight; j++)
+            {
+                Tile tile = Tiles.Find(x => x.Location.x == i && x.Location.y == j);
+
+                if(tile == null)
+                    continue;
+
+                newTile = Instantiate(tile.TilePrefab);
+
+                newTile.transform.position = new Vector3(MainOffset.x * (i - MapWidth), 0f, MainOffset.z * j) + (j % 2 == 0 ? Vector3.zero : AlternateOffset);
+                newTile.transform.parent = FakeTilesParent.transform;
+
+                tile = newTile.GetComponent<Tile>();
+
+                if(tile != null)
+                {
+                    tile.Location = new Vector2(i, j);
+                    tile.Elevation = tileMap[i][j];
+                    tile.IsFakeTile = true;
+                }
+
+                passes++;
+
+                if(passes > 1000)
+                {
+                    passes = 0;
+                    yield return null;
+                }
+            }
+
+        passes = 0;
+
+        Debug.Log("Right Side");
+
+        // Right side
+        for(int i = 0; i < 20; i++)
+            for(int j = 0; j < MapHeight; j++)
+            {
+                Tile tile = Tiles.Find(x => x.Location.x == i && x.Location.y == j);
+
+                if(tile == null)
+                    continue;
+
+                newTile = Instantiate(tile.TilePrefab);
+
+                newTile.transform.position = new Vector3(MainOffset.x * (i + MapWidth), 0f, MainOffset.z * j) + (j % 2 == 0 ? Vector3.zero : AlternateOffset);
+                newTile.transform.parent = FakeTilesParent.transform;
+
+                tile = newTile.GetComponent<Tile>();
+
+                if(tile != null)
+                {
+                    tile.Location = new Vector2(i, j);
+                    tile.Elevation = tileMap[i][j];
+                    tile.IsFakeTile = true;
+                }
+
+                passes++;
+
+                if(passes > 1000)
+                {
+                    passes = 0;
+                    yield return null;
+                }
+            }
 
         IsGenerating = false;
 

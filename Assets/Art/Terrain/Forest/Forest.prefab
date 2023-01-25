@@ -131,9 +131,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Type: 7
   Feature: 0
-  Movement: 1
-  MinimumElevation: 0.8
-  MaximumElevation: 2
+  Movement: 2
+  MinimumElevation: 0.7500001
+  MaximumElevation: 0.82
   TilePrefab: {fileID: 8780745454358607407}
   Location: {x: 0, y: 0}
   Elevation: 0

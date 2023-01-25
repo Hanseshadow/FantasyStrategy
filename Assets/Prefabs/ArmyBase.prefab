@@ -42,6 +42,7 @@ GameObject:
   - component: {fileID: 2605785908697940064}
   - component: {fileID: 2605785908697940067}
   - component: {fileID: 6324134296695952931}
+  - component: {fileID: 930241596642528981}
   m_Layer: 0
   m_Name: ArmyBase
   m_TagString: Untagged
@@ -103,6 +104,25 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2a3983ea6c19d53499fd3cc613007652, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  MapLocation: {x: 0, y: 0}
+  Data:
+    PlayerOwner: 0
+    ArmyID: 0
+    MapLocation: {x: 0, y: 0}
+    ArmyAlignment: 0
   Portrait: {fileID: 0}
   ArmyOrientation: {fileID: 2605785908255064178}
+--- !u!114 &930241596642528981
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2605785908697940065}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1b17757f3e3d0e849a313493088a03f2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  LerpLength: 1
+  IsLerping: 0
+  TargetObject: {fileID: 0}

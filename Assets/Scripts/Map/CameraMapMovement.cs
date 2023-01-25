@@ -2,13 +2,15 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class CameraPanning : MonoBehaviour
+public class CameraMapMovement : MonoBehaviour
 {
     private GameManager GM;
-    float minFov = 50f;
-    float maxFov = 90f;
-    float sensitivity = 20f;
+    float MinFov = 50f;
+    float MaxFov = 75f;
+    float Sensitivity = 20f;
     Vector3 LastPosition;
+    public Vector3 MinimumZoom = new Vector3(0f, 50f, 0f);
+    public Vector3 MaximumZoom = new Vector3(0f, 100f, 0f);
 
     Vector3 MapSizeInMeters;
 
@@ -33,10 +35,11 @@ public class CameraPanning : MonoBehaviour
             return;
 
         float fov = Camera.main.fieldOfView;
-        fov -= Input.GetAxis("Mouse ScrollWheel") * sensitivity;
-        fov = Mathf.Clamp(fov, minFov, maxFov);
+        fov -= Input.GetAxis("Mouse ScrollWheel") * Sensitivity;
+        fov = Mathf.Clamp(fov, MinFov, MaxFov);
         Camera.main.fieldOfView = fov;
 
+        // If you don't press a key to pan, then don't do anything.
         if(!Input.GetMouseButton(1) && !Input.GetKey(KeyCode.W) && !Input.GetKey(KeyCode.A) && !Input.GetKey(KeyCode.S) && !Input.GetKey(KeyCode.D))
             return;
 
@@ -83,8 +86,8 @@ public class CameraPanning : MonoBehaviour
         if(cameraPositionX > MapSizeInMeters.x)
             cameraPositionX = 0;
 
-        if(cameraPositionY > MapSizeInMeters.y - 100f)
-            cameraPositionY = MapSizeInMeters.y - 100f;
+        if(cameraPositionY > MapSizeInMeters.y - 50f)
+            cameraPositionY = MapSizeInMeters.y - 50f;
 
         transform.position = new Vector3(cameraPositionX, 50f, cameraPositionY);
         LastPosition = transform.position;

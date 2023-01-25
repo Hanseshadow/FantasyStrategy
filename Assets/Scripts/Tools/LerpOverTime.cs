@@ -11,7 +11,11 @@ public class LerpOverTime : MonoBehaviour
     Vector3 LocationStart;
     Vector3 CurrentLocation;
     Vector3 TargetLocation;
-    bool IsLerping = false;
+    public bool IsLerping = false;
+
+    public GameObject TargetObject;
+
+    bool TestingInitialized = false;
 
     GameManager Game;
 
@@ -25,11 +29,20 @@ public class LerpOverTime : MonoBehaviour
         if(!IsLerping || Game == null || Game.IsGamePaused)
             return;
 
+        // Lerp testing
+        if(!TestingInitialized && TargetObject != null)
+        {
+            CurrentLocation = transform.position;
+            LocationStart = CurrentLocation;
+            TargetLocation = TargetObject.transform.position;
+            TestingInitialized = true;
+        }
+
         LerpTime += Time.deltaTime;
 
         gameObject.transform.position = Vector3.Lerp(LocationStart, TargetLocation, LerpTime / LerpLength);
 
-        if(LerpTime / LerpLength >= LerpLength)
+        if(LerpTime / LerpLength >= 1)
         {
             LerpCompleted();
         }
@@ -44,6 +57,9 @@ public class LerpOverTime : MonoBehaviour
     public void LerpCompleted()
     {
         IsLerping = false;
+        LerpTime = 0f;
+        TargetObject = null;
+        TestingInitialized = false;
     }
 
     public void SetLocation()

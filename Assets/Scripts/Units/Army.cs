@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+// Save game data
 [System.Serializable]
 public class ArmyData
 {
@@ -22,6 +23,7 @@ public class ArmyData
     public ArmyAlignments ArmyAlignment;
 }
 
+// Runtime data
 public class Army : MonoBehaviour
 {
     public ArmyData Data;
@@ -29,4 +31,13 @@ public class Army : MonoBehaviour
     public ArmyPortrait Portrait;
 
     public GameObject ArmyOrientation;
+
+    private void Start()
+    {
+        Canvas canvas = GetComponent<Canvas>();
+
+        // Make sure armies overlap properly on the map.
+        if(canvas != null)
+            canvas.overrideSorting = true;
+    }
 }

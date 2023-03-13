@@ -66,30 +66,37 @@ public class GameManager : MonoBehaviour
             case UIScreens.MainMenu:
                 MainMenu.SetActive(true);
                 IsInUI = true;
-                Time.timeScale = 0f;
                 break;
             case UIScreens.LoadingScreen:
                 LoadingScreen.SetActive(true);
                 IsInUI = true;
-                Time.timeScale = 0f;
                 break;
             case UIScreens.GameScreen:
                 GameScreen.SetActive(true);
                 UnitUI.SetActive(true);
                 IsInUI = false;
-                Time.timeScale = 1f;
                 break;
             case UIScreens.MapCreation:
                 MapCreation.SetActive(true);
                 IsInUI = true;
-                Time.timeScale = 0f;
                 break;
             case UIScreens.Settings:
                 Settings.SetActive(true);
                 IsInUI = true;
-                Time.timeScale = 0f;
                 break;
         }
+    }
+
+    private void PauseGame()
+    {
+        IsGamePaused = true;
+        Time.timeScale = 0f;
+    }
+
+    private void UnPauseGame()
+    {
+        IsGamePaused = false;
+        Time.timeScale = 1f;
     }
 
     private void HideScreens()
@@ -97,7 +104,7 @@ public class GameManager : MonoBehaviour
         LoadingScreen.SetActive(false);
         MainMenu.SetActive(false);
         GameScreen.SetActive(false);
-        UnitUI.SetActive(false);
+        //UnitUI.SetActive(false);
         MapCreation.SetActive(false);
         Settings.SetActive(false);
     }

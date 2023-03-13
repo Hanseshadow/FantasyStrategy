@@ -6,6 +6,7 @@ using UnityEngine;
 public class MapData
 {
     public MapGrid.MapSize CurrentSize = MapGrid.MapSize.Small;
+    public MapGrid.LandmassSize LandmassSize = MapGrid.LandmassSize.Small;
     public List<Tile> Tiles;
     public int MapHeight = 0;
     public int MapWidth = 0;
@@ -22,6 +23,16 @@ public class MapGrid : MonoBehaviour
 
     public MapSize CurrentSize = MapSize.Small;
 
+    public enum LandmassSize
+    {
+        Small = 12,
+        Medium = 10,
+        Large = 8,
+        Huge = 6
+    }
+
+    public LandmassSize IslandSize = LandmassSize.Small;
+
     List<Vector2> Sizes;
 
     public bool Resize = false;
@@ -35,7 +46,6 @@ public class MapGrid : MonoBehaviour
 
     private List<Tile> AllTileTypes = new List<Tile>();
 
-    public int PerlinScale = 8;
     public float Elevation = 0.6f;
     public int Passes = 2;
     public float Division = 2f;
@@ -118,7 +128,14 @@ public class MapGrid : MonoBehaviour
                 Destroy(tile.gameObject);
         }
 
+        foreach(Tile tile in FakeTiles)
+        {
+            if(tile != null && tile.gameObject != null)
+                Destroy(tile.gameObject);
+        }
+
         Tiles.Clear();
+        FakeTiles.Clear();
     }
 
     private void ResetCamera()
@@ -131,7 +148,7 @@ public class MapGrid : MonoBehaviour
 
         MainCamera.transform.position = new Vector3(cameraX, MainCamera.transform.position.y, cameraZ);
 
-        Debug.Log("Main camera position: " + MainCamera.transform.position + " x: " + cameraX + " z: " + cameraZ);
+        // Debug.Log("Main camera position: " + MainCamera.transform.position + " x: " + cameraX + " z: " + cameraZ);
     }
 
     List<Tile> GetPossibleTiles(float height)
@@ -142,6 +159,10 @@ public class MapGrid : MonoBehaviour
     private IEnumerator Generate()
     {
         IsGenerating = true;
+
+        Debug.Log("Map generating.");
+
+        int frames = 0;
 
         MapWidth = (int)Sizes[(int)CurrentSize].x;
         MapHeight = (int)Sizes[(int)CurrentSize].y;
@@ -164,7 +185,7 @@ public class MapGrid : MonoBehaviour
             float originX = Random.Range(0, 10000000);
             float originY = Random.Range(0, 10000000);
 
-            float scale = PerlinScale / (h + 1) * Division;
+            float scale = (float)IslandSize / (h + 1) * Division;
 
             for(int i = 0; i < MapWidth; i++)
             {
@@ -216,10 +237,13 @@ public class MapGrid : MonoBehaviour
                 if(passes > 1000)
                 {
                     passes = 0;
+                    frames++;
                     yield return null;
                 }
             }
         }
+
+        Debug.Log("Main map frames: " + frames);
 
         ///////
         // Fake map edges
@@ -320,6 +344,25 @@ public class MapGrid : MonoBehaviour
                 break;
             case "large":
                 CurrentSize = MapSize.Large;
+                break;
+        }
+    }
+
+    public void SetLandmassSize(string size)
+    {
+        switch(size)
+        {
+            case "small":
+                IslandSize = LandmassSize.Small;
+                break;
+            case "medium":
+                IslandSize = LandmassSize.Medium;
+                break;
+            case "large":
+                IslandSize = LandmassSize.Large;
+                break;
+            case "huge":
+                IslandSize = LandmassSize.Huge;
                 break;
         }
     }

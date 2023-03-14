@@ -25,13 +25,21 @@ public class MapGrid : MonoBehaviour
 
     public enum LandmassSize
     {
-        Small = 12,
+        Small = 30,
         Medium = 10,
         Large = 8,
         Huge = 6
     }
 
-    public LandmassSize IslandSize = LandmassSize.Small;
+    public List<Vector2> YIsEven = new List<Vector2>() { new Vector2(-1, 1) /* NW */, new Vector2(0, 2) /* N */, new Vector2(0, 1) /* NE */,
+        new Vector2(-1, -1) /* SW */, new Vector2(0, -2) /* S */, new Vector2(0, -1) /* SE */
+    };
+
+    public List<Vector2> YIsOdd  = new List<Vector2>() { new Vector2( 0, 1) /* NW */, new Vector2(0, 2) /* N */, new Vector2(1, 1) /* NE */,
+        new Vector2( 0, -1) /* SW */, new Vector2(0, -2) /* S */, new Vector2(1, -1) /* SE */
+    };
+
+public LandmassSize IslandSize = LandmassSize.Small;
 
     List<Vector2> Sizes;
 
@@ -48,7 +56,7 @@ public class MapGrid : MonoBehaviour
 
     public float Elevation = 0.6f;
     public int Passes = 2;
-    public float Division = 2f;
+    public float NextSize = 2f;
 
     public bool IsGenerating = false;
 
@@ -104,6 +112,7 @@ public class MapGrid : MonoBehaviour
         AlternateOffset = new Vector3(7.5f, 0f, 0f);
 
         Tiles = new List<Tile>();
+        FakeTiles = new List<Tile>();
 
         // Initialize what types of tiles can be placed
         foreach(GameObject go in TileTypes)
@@ -156,6 +165,20 @@ public class MapGrid : MonoBehaviour
         return AllTileTypes.FindAll(x => x.MinimumElevation <= height && x.MaximumElevation >= height);
     }
 
+    List<Tile> GetPossibleTiles(Tile.TileType type)
+    {
+        List<Tile> tiles = new List<Tile>();
+
+        foreach(Tile tile in AllTileTypes)
+        {
+            if(tile.Type == type)
+                tiles.Add(tile);
+        }
+
+        return tiles;
+        //return AllTileTypes.FindAll(x => x.Type == type);
+    }
+
     private IEnumerator Generate()
     {
         IsGenerating = true;
@@ -180,20 +203,40 @@ public class MapGrid : MonoBehaviour
                 tileMap[i].Add(0);
         }
 
+        // TODO: Need a sea pass and then an island/continent pass
+        float originX = Random.Range(0, 10000000);
+        float originY = Random.Range(0, 10000000);
+
+        float scale = (float)IslandSize / 2f; // / (h + 1) * Division;
+
+        if(scale < 10f)
+            scale = 10f;
+
+        for(int i = 0; i < MapWidth; i++)
+        {
+            for(int j = 0; j < MapHeight; j++)
+            {
+                float elevation = Mathf.PerlinNoise((originX + (float)i) / (float)MapWidth * 3 * scale, (originY + (float)j) / (float)MapHeight * scale);
+
+                if(tileMap[i][j] < Elevation)
+                    tileMap[i][j] = elevation;
+            }
+        }
+
         for(int h = 0; h < Passes; h++)
         {
-            float originX = Random.Range(0, 10000000);
-            float originY = Random.Range(0, 10000000);
+            originX = Random.Range(0, 10000000);
+            originY = Random.Range(0, 10000000);
 
-            float scale = (float)IslandSize / (h + 1) * Division;
+            scale = (float)IslandSize - (NextSize * h); // / (h + 1) * Division;
 
             for(int i = 0; i < MapWidth; i++)
             {
                 for(int j = 0; j < MapHeight; j++)
                 {
-                    float elevation = Mathf.PerlinNoise((originX + (float)i) / (float)MapWidth * 2 * scale, (originY + (float)j) / (float)MapHeight * scale);
+                    float elevation = Mathf.PerlinNoise((originX + (float)i) / (float)MapWidth * 3 * scale, (originY + (float)j) / (float)MapHeight * scale);
 
-                    if(tileMap[i][j] < elevation)
+                    if(tileMap[i][j] < elevation && tileMap[i][j] >= Elevation)
                         tileMap[i][j] = elevation;
                 }
             }
@@ -201,6 +244,7 @@ public class MapGrid : MonoBehaviour
 
         int passes = 0;
 
+        // Place tiles
         for(int i = 0; i < MapWidth; i++)
         {
             for(int j = 0; j < MapHeight; j++)
@@ -243,6 +287,111 @@ public class MapGrid : MonoBehaviour
             }
         }
 
+        int tileIndex = 0;
+
+        passes = 0;
+
+        // Fix shallow water
+        while(tileIndex < Tiles.Count)
+        {
+            Tile tile = Tiles[tileIndex];
+
+            if(tile == null)
+            {
+                Tiles.RemoveAt(tileIndex);
+                continue;
+            }
+
+            // Orphan shallow water removal
+            if(!IsAdjacentToLand(tile) && tile.Type == Tile.TileType.ShallowWater)
+            {
+                List<Tile> possibleTiles = GetPossibleTiles(1);
+
+                Tile tileReplacement = tile.Copy();
+
+                if(possibleTiles.Count > 0)
+                {
+                    tileReplacement.TilePrefab = possibleTiles[Random.Range(0, possibleTiles.Count)].TilePrefab;
+                }
+
+                newTile = Instantiate(tileReplacement.TilePrefab);
+
+                newTile.transform.position = new Vector3(MainOffset.x * tileReplacement.Location.x, 0f, MainOffset.z * tileReplacement.Location.y) + (tileReplacement.Location.y % 2 == 0 ? Vector3.zero : AlternateOffset);
+                newTile.transform.parent = this.transform;
+
+                newTile.GetComponent<Tile>().Location = new Vector2(tileReplacement.Location.x, tileReplacement.Location.y);
+                newTile.GetComponent<Tile>().Elevation = 1;
+
+                Tiles.Remove(tile);
+                Tiles.Add(newTile.GetComponent<Tile>());
+
+                Destroy(tile.gameObject);
+
+                passes++;
+
+                if(passes > 1000)
+                {
+                    passes = 0;
+                    frames++;
+                    yield return null;
+                }
+            }
+
+            tileIndex++;
+        }
+
+        passes = 0;
+        tileIndex = 0;
+
+        // Fix shallow water
+        while(tileIndex < Tiles.Count)
+        {
+            Tile tile = Tiles[tileIndex];
+
+            if(tile == null)
+            {
+                Tiles.RemoveAt(tileIndex);
+                continue;
+            }
+
+            // Coastal shallow water adding
+            if(IsAdjacentToLand(tile) && tile.IsWater() && tile.Type != Tile.TileType.ShallowWater)
+            {
+                List<Tile> possibleTiles = GetPossibleTiles(Tile.TileType.ShallowWater);
+
+                Tile tileReplacement = tile.Copy();
+
+                if(possibleTiles.Count > 0)
+                {
+                    tileReplacement.TilePrefab = possibleTiles[Random.Range(0, possibleTiles.Count)].TilePrefab;
+                }
+
+                newTile = Instantiate(tileReplacement.TilePrefab);
+
+                newTile.transform.position = new Vector3(MainOffset.x * tileReplacement.Location.x, 0f, MainOffset.z * tileReplacement.Location.y) + (tileReplacement.Location.y % 2 == 0 ? Vector3.zero : AlternateOffset);
+                newTile.transform.parent = this.transform;
+
+                newTile.GetComponent<Tile>().Location = new Vector2(tileReplacement.Location.x, tileReplacement.Location.y);
+                newTile.GetComponent<Tile>().Elevation = newTile.GetComponent<Tile>().MinimumElevation;
+
+                Tiles.Remove(tile);
+                Tiles.Add(newTile.GetComponent<Tile>());
+
+                Destroy(tile.gameObject);
+
+                passes++;
+
+                if(passes > 1000)
+                {
+                    passes = 0;
+                    frames++;
+                    yield return null;
+                }
+            }
+
+            tileIndex++;
+        }
+
         Debug.Log("Main map frames: " + frames);
 
         ///////
@@ -275,6 +424,7 @@ public class MapGrid : MonoBehaviour
                     tile.Location = new Vector2(i, j);
                     tile.Elevation = tileMap[i][j];
                     tile.IsFakeTile = true;
+                    FakeTiles.Add(tile);
                 }
 
                 passes++;
@@ -311,6 +461,7 @@ public class MapGrid : MonoBehaviour
                     tile.Location = new Vector2(i, j);
                     tile.Elevation = tileMap[i][j];
                     tile.IsFakeTile = true;
+                    FakeTiles.Add(tile);
                 }
 
                 passes++;
@@ -365,6 +516,35 @@ public class MapGrid : MonoBehaviour
                 IslandSize = LandmassSize.Huge;
                 break;
         }
+    }
+
+    public bool IsAdjacentToLand(Tile tile)
+    {
+        // There could be a floating point error here.
+        int x = (int)tile.Location.x;
+        int y = (int)tile.Location.y;
+
+        List<Vector2> locationsByY = (y % 2 == 0 ? YIsEven : YIsOdd);
+
+        for(int i = 0; i < locationsByY.Count; i++)
+        {
+            Tile tileToCheck = GetTileAtLocation(tile.Location.x + locationsByY[i].x, tile.Location.y + locationsByY[i].y);
+
+            if(tileToCheck == null)
+                continue;
+
+            if(!tileToCheck.IsWater())
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public Tile GetTileAtLocation(float x, float y)
+    {
+        return Tiles.Find(a => (int)a.Location.x == (int)x && (int)a.Location.y == (int)y);
     }
 
     public Vector2 GetMapSizeInMeters()

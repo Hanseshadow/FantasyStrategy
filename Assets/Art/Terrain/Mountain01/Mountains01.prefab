@@ -4951,7 +4951,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b8dce3dd52f0c3646a978e13d8c83229, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Type: 7
+  Type: 13
   Feature: 0
   Movement: 2
   MinimumElevation: 0.900001
@@ -4959,6 +4959,7 @@ MonoBehaviour:
   TilePrefab: {fileID: 8780745454358607407}
   Location: {x: 0, y: 0}
   Elevation: 0
+  IsFakeTile: 0
 --- !u!1001 &3185321036650621923
 PrefabInstance:
   m_ObjectHideFlags: 0

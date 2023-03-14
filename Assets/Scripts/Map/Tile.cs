@@ -57,4 +57,36 @@ public class Tile : MonoBehaviour
     public float Elevation = 0f;
 
     public bool IsFakeTile = false;
+
+    public Tile Copy()
+    {
+        Tile newTile = new Tile();
+
+        newTile.Type = Type;
+        newTile.Feature = Feature;
+        newTile.Movement = Movement;
+        newTile.MinimumElevation = MinimumElevation;
+        newTile.MaximumElevation = MaximumElevation;
+        newTile.TilePrefab = TilePrefab;
+        newTile.Location = Location;
+        newTile.Elevation = Elevation;
+        newTile.IsFakeTile = IsFakeTile;
+
+        return newTile;
+    }
+
+    public bool IsWater()
+    {
+        switch(Type)
+        {
+            case TileType.DeepOcean:
+            case TileType.ShallowWater:
+            case TileType.Whirlpool:
+            case TileType.BubblingSea:
+            case TileType.SteamySea:
+                return true;
+        }
+
+        return false;
+    }
 }

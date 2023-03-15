@@ -58,9 +58,14 @@ public class Tile : MonoBehaviour
 
     public bool IsFakeTile = false;
 
-    public Tile Copy()
+    public Tile CopyTo(GameObject newObject)
     {
-        Tile newTile = new Tile();
+        Tile newTile;
+
+        if(newObject.GetComponent<Tile>() == null)
+            newTile = newObject.AddComponent<Tile>();
+        else
+            newTile = newObject.GetComponent<Tile>();
 
         newTile.Type = Type;
         newTile.Feature = Feature;

@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 [System.Serializable]
@@ -192,6 +193,7 @@ public LandmassSize IslandSize = LandmassSize.Small;
 
         GameObject tilePrefab;
         GameObject newTile;
+        Tile tile = null;
 
         List<List<float>> tileMap = new List<List<float>>();
 
@@ -266,7 +268,7 @@ public LandmassSize IslandSize = LandmassSize.Small;
                 newTile.transform.position = new Vector3(MainOffset.x * i, 0f, MainOffset.z * j) + (j % 2 == 0 ? Vector3.zero : AlternateOffset);
                 newTile.transform.parent = this.transform;
 
-                Tile tile = newTile.GetComponent<Tile>();
+                tile = newTile.GetComponent<Tile>();
 
                 if(tile != null)
                 {
@@ -290,11 +292,13 @@ public LandmassSize IslandSize = LandmassSize.Small;
         int tileIndex = 0;
 
         passes = 0;
+        
+        List<Tile> possibleTiles = new List<Tile>();
 
         // Fix shallow water
         while(tileIndex < Tiles.Count)
         {
-            Tile tile = Tiles[tileIndex];
+            tile = Tiles[tileIndex];
 
             if(tile == null)
             {
@@ -305,21 +309,23 @@ public LandmassSize IslandSize = LandmassSize.Small;
             // Orphan shallow water removal
             if(!IsAdjacentToLand(tile) && tile.Type == Tile.TileType.ShallowWater)
             {
-                List<Tile> possibleTiles = GetPossibleTiles(1);
-
-                Tile tileReplacement = tile.Copy();
+                possibleTiles = GetPossibleTiles(1);
 
                 if(possibleTiles.Count > 0)
                 {
-                    tileReplacement.TilePrefab = possibleTiles[Random.Range(0, possibleTiles.Count)].TilePrefab;
+                    tilePrefab = possibleTiles[Random.Range(0, possibleTiles.Count)].TilePrefab;
+                }
+                else
+                {
+                    continue;
                 }
 
-                newTile = Instantiate(tileReplacement.TilePrefab);
+                newTile = Instantiate(tilePrefab);
 
-                newTile.transform.position = new Vector3(MainOffset.x * tileReplacement.Location.x, 0f, MainOffset.z * tileReplacement.Location.y) + (tileReplacement.Location.y % 2 == 0 ? Vector3.zero : AlternateOffset);
+                newTile.transform.position = new Vector3(MainOffset.x * tile.Location.x, 0f, MainOffset.z * tile.Location.y) + (tile.Location.y % 2 == 0 ? Vector3.zero : AlternateOffset);
                 newTile.transform.parent = this.transform;
 
-                newTile.GetComponent<Tile>().Location = new Vector2(tileReplacement.Location.x, tileReplacement.Location.y);
+                newTile.GetComponent<Tile>().Location = new Vector2(tile.Location.x, tile.Location.y);
                 newTile.GetComponent<Tile>().Elevation = 1;
 
                 Tiles.Remove(tile);
@@ -331,6 +337,8 @@ public LandmassSize IslandSize = LandmassSize.Small;
 
                 if(passes > 1000)
                 {
+                    Debug.Log("Fix shallow water orphan at: " + tile.Location);
+
                     passes = 0;
                     frames++;
                     yield return null;
@@ -346,32 +354,41 @@ public LandmassSize IslandSize = LandmassSize.Small;
         // Fix shallow water
         while(tileIndex < Tiles.Count)
         {
-            Tile tile = Tiles[tileIndex];
+            tile = Tiles[tileIndex];
 
             if(tile == null)
             {
                 Tiles.RemoveAt(tileIndex);
+                Debug.Log("Fix missing shallow water: Null tile found.");
                 continue;
             }
 
             // Coastal shallow water adding
             if(IsAdjacentToLand(tile) && tile.IsWater() && tile.Type != Tile.TileType.ShallowWater)
             {
-                List<Tile> possibleTiles = GetPossibleTiles(Tile.TileType.ShallowWater);
-
-                Tile tileReplacement = tile.Copy();
+                possibleTiles = GetPossibleTiles(Tile.TileType.ShallowWater);
 
                 if(possibleTiles.Count > 0)
                 {
-                    tileReplacement.TilePrefab = possibleTiles[Random.Range(0, possibleTiles.Count)].TilePrefab;
+                    tilePrefab = possibleTiles[Random.Range(0, possibleTiles.Count)].TilePrefab;
+                }
+                else
+                {
+                    Debug.Log("Fix missing shallow water: No tile replacement at: " + tile.Location);
+                    continue;
                 }
 
-                newTile = Instantiate(tileReplacement.TilePrefab);
+                newTile = Instantiate(tilePrefab);
 
-                newTile.transform.position = new Vector3(MainOffset.x * tileReplacement.Location.x, 0f, MainOffset.z * tileReplacement.Location.y) + (tileReplacement.Location.y % 2 == 0 ? Vector3.zero : AlternateOffset);
+                if(newTile == null)
+                {
+                    Debug.Log("Fix missing shallow water: No replacement tile at: " + tile.Location);
+                }
+
+                newTile.transform.position = new Vector3(MainOffset.x * tile.Location.x, 0f, MainOffset.z * tile.Location.y) + (tile.Location.y % 2 == 0 ? Vector3.zero : AlternateOffset);
                 newTile.transform.parent = this.transform;
 
-                newTile.GetComponent<Tile>().Location = new Vector2(tileReplacement.Location.x, tileReplacement.Location.y);
+                newTile.GetComponent<Tile>().Location = new Vector2(tile.Location.x, tile.Location.y);
                 newTile.GetComponent<Tile>().Elevation = newTile.GetComponent<Tile>().MinimumElevation;
 
                 Tiles.Remove(tile);
@@ -383,10 +400,16 @@ public LandmassSize IslandSize = LandmassSize.Small;
 
                 if(passes > 1000)
                 {
+                    Debug.Log("Fix shallow water missing at: " + tile.Location);
+
                     passes = 0;
                     frames++;
                     yield return null;
                 }
+            }
+            else if(IsAdjacentToLand(tile) && tile.IsWater() && tile.Type != Tile.TileType.ShallowWater)
+            {
+                Debug.Log("Deep water tile replaced at: " + tile.Location);
             }
 
             tileIndex++;
@@ -407,7 +430,7 @@ public LandmassSize IslandSize = LandmassSize.Small;
         for(int i = MapWidth - 1; i > MapWidth - 20; i--)
             for(int j = 0; j < MapHeight; j++)
             {
-                Tile tile = Tiles.Find(x => x.Location.x == i && x.Location.y == j);
+                tile = Tiles.Find(x => x.Location.x == i && x.Location.y == j);
 
                 if(tile == null)
                     continue;
@@ -444,7 +467,7 @@ public LandmassSize IslandSize = LandmassSize.Small;
         for(int i = 0; i < 20; i++)
             for(int j = 0; j < MapHeight; j++)
             {
-                Tile tile = Tiles.Find(x => x.Location.x == i && x.Location.y == j);
+                tile = Tiles.Find(x => x.Location.x == i && x.Location.y == j);
 
                 if(tile == null)
                     continue;

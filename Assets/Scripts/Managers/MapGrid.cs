@@ -6,7 +6,7 @@ using UnityEngine;
 [System.Serializable]
 public class MapData
 {
-    public MapGrid.MapSize CurrentSize = MapGrid.MapSize.Small;
+    public MapGrid.MapSize CurrentSize = MapGrid.MapSize.Tiny;
     public MapGrid.LandmassSize LandmassSize = MapGrid.LandmassSize.Small;
     public List<Tile> Tiles;
     public int MapHeight = 0;
@@ -15,32 +15,50 @@ public class MapData
 
 public class MapGrid : MonoBehaviour
 {
+    public static MapGrid GetMapGrid()
+    {
+        return _Instance;
+    }
+
+    private static MapGrid _Instance
+    {
+        get 
+        {
+            return FindAnyObjectByType<MapGrid>();
+        }
+
+        set { _Instance = value; }
+    }
+
     public enum MapSize
     {
+        Tiny,
         Small,
         Medium,
         Large
     }
 
-    public MapSize CurrentSize = MapSize.Small;
+    public MapSize CurrentSize = MapSize.Tiny;
 
     public enum LandmassSize
     {
-        Small = 30,
+        Small = 15,
         Medium = 10,
         Large = 8,
         Huge = 6
     }
 
-    public List<Vector2> YIsEven = new List<Vector2>() { new Vector2(-1, 1) /* NW */, new Vector2(0, 2) /* N */, new Vector2(0, 1) /* NE */,
+    public LandmassSize IslandSize = LandmassSize.Small;
+
+    [HideInInspector]
+    public static List<Vector2> YIsEven = new List<Vector2>() { new Vector2(-1, 1) /* NW */, new Vector2(0, 2) /* N */, new Vector2(0, 1) /* NE */,
         new Vector2(-1, -1) /* SW */, new Vector2(0, -2) /* S */, new Vector2(0, -1) /* SE */
     };
 
-    public List<Vector2> YIsOdd  = new List<Vector2>() { new Vector2( 0, 1) /* NW */, new Vector2(0, 2) /* N */, new Vector2(1, 1) /* NE */,
+    [HideInInspector]
+    public static List<Vector2> YIsOdd  = new List<Vector2>() { new Vector2( 0, 1) /* NW */, new Vector2(0, 2) /* N */, new Vector2(1, 1) /* NE */,
         new Vector2( 0, -1) /* SW */, new Vector2(0, -2) /* S */, new Vector2(1, -1) /* SE */
     };
-
-public LandmassSize IslandSize = LandmassSize.Small;
 
     List<Vector2> Sizes;
 
@@ -104,6 +122,7 @@ public LandmassSize IslandSize = LandmassSize.Small;
     {
         Sizes = new List<Vector2>()
         {
+            new Vector2(50, 50),
             new Vector2(100, 100),
             new Vector2(200, 200),
             new Vector2(300, 300)
@@ -163,6 +182,12 @@ public LandmassSize IslandSize = LandmassSize.Small;
 
     List<Tile> GetPossibleTiles(float height)
     {
+        if(height < 0f)
+            height = 0f;
+
+        if(height > 1f)
+            height = 1f;
+
         return AllTileTypes.FindAll(x => x.MinimumElevation <= height && x.MaximumElevation >= height);
     }
 
@@ -188,6 +213,8 @@ public LandmassSize IslandSize = LandmassSize.Small;
 
         int frames = 0;
 
+        int largeSize = (int)Sizes[(int)MapSize.Large].x;
+
         MapWidth = (int)Sizes[(int)CurrentSize].x;
         MapHeight = (int)Sizes[(int)CurrentSize].y;
 
@@ -197,11 +224,11 @@ public LandmassSize IslandSize = LandmassSize.Small;
 
         List<List<float>> tileMap = new List<List<float>>();
 
-        for(int i = 0; i < MapHeight; i++)
+        for(int i = 0; i < largeSize; i++)
         {
             tileMap.Add(new List<float>());
 
-            for(int j = 0; j < MapWidth; j++)
+            for(int j = 0; j < largeSize; j++)
                 tileMap[i].Add(0);
         }
 
@@ -209,21 +236,49 @@ public LandmassSize IslandSize = LandmassSize.Small;
         float originX = Random.Range(0, 10000000);
         float originY = Random.Range(0, 10000000);
 
-        float scale = (float)IslandSize / 2f; // / (h + 1) * Division;
+        float scale = (float)IslandSize;
 
-        if(scale < 10f)
-            scale = 10f;
+        int passes = 0;
 
-        for(int i = 0; i < MapWidth; i++)
+        for(int i = 0; i < largeSize; i++)
         {
-            for(int j = 0; j < MapHeight; j++)
+            for(int j = 0; j < largeSize; j++)
             {
-                float elevation = Mathf.PerlinNoise((originX + (float)i) / (float)MapWidth * 3 * scale, (originY + (float)j) / (float)MapHeight * scale);
+                float elevation = Mathf.PerlinNoise((originX + (float)i) / 300f * 3f * scale, (originY + (float)j) / 300f * scale);
+
+                if(elevation < 0.8f)
+                    switch(IslandSize)
+                    {
+                        case LandmassSize.Small:
+                            break;
+                        case LandmassSize.Medium:
+                            elevation += 0.05f;
+                            break;
+                        case LandmassSize.Large:
+                            elevation += 0.10f;
+                            break;
+                        case LandmassSize.Huge:
+                            elevation += 0.15f;
+                            break;
+                    }
+
+                //Debug.Log("Elevation (" + i + ", " + j + "): " + elevation);
 
                 if(tileMap[i][j] < Elevation)
                     tileMap[i][j] = elevation;
+
+                if(passes > 1000)
+                {
+                    passes = 0;
+                    frames++;
+                    yield return null;
+                }
+
+                passes++;
             }
         }
+
+        passes = 0;
 
         for(int h = 0; h < Passes; h++)
         {
@@ -232,19 +287,63 @@ public LandmassSize IslandSize = LandmassSize.Small;
 
             scale = (float)IslandSize - (NextSize * h); // / (h + 1) * Division;
 
-            for(int i = 0; i < MapWidth; i++)
+            for(int i = 0; i < largeSize; i++)
             {
-                for(int j = 0; j < MapHeight; j++)
+                for(int j = 0; j < largeSize; j++)
                 {
-                    float elevation = Mathf.PerlinNoise((originX + (float)i) / (float)MapWidth * 3 * scale, (originY + (float)j) / (float)MapHeight * scale);
+                    float elevation = Mathf.PerlinNoise((originX + (float)i) / (float)largeSize * 3f * scale, (originY + (float)j) / (float)largeSize * scale);
 
                     if(tileMap[i][j] < elevation && tileMap[i][j] >= Elevation)
                         tileMap[i][j] = elevation;
+
+                    if(passes > 1000)
+                    {
+                        passes = 0;
+                        frames++;
+                        yield return null;
+                    }
+
+                    passes++;
                 }
             }
         }
 
-        int passes = 0;
+        List<Tile> shallowWater = GetPossibleTiles(Tile.TileType.ShallowWater);
+
+        if(shallowWater != null && shallowWater.Count > 0)
+        {
+            // Check adjacent elevations
+            for(int i = 0; i < largeSize; i++)
+            {
+                for(int j = 0; j < largeSize; j++)
+                {
+                    if(tileMap[i][j] < shallowWater[0].MinimumElevation &&
+                        (tileMap[i - 1 < 0 ? MapWidth - 1 : i - 1][j] > shallowWater[0].MaximumElevation ||
+                        tileMap[i + 1 > MapWidth - 1 ? 0 : i + 1][j] > shallowWater[0].MaximumElevation ||
+                        tileMap[i][j - 1 < 0 ? MapWidth - 1 : j - 1] > shallowWater[0].MaximumElevation ||
+                        tileMap[i][j + 1 > MapWidth - 1 ? 0 : j + 1] > shallowWater[0].MaximumElevation ||
+                        tileMap[i - 1 < 0 ? MapWidth - 1 : i - 1][j + 1 > MapWidth - 1 ? 0 : j + 1] > shallowWater[0].MaximumElevation ||
+                        tileMap[i - 1 < 0 ? MapWidth - 1 : i - 1][j - 1 < 0 ? MapWidth - 1 : j - 1] > shallowWater[0].MaximumElevation ||
+                        tileMap[i + 1 > MapWidth - 1 ? 0 : i + 1][j + 1 > MapWidth - 1 ? 0 : j + 1] > shallowWater[0].MaximumElevation ||
+                        tileMap[i + 1 > MapWidth - 1 ? 0 : i + 1][j - 1 < 0 ? MapWidth - 1 : j - 1] > shallowWater[0].MaximumElevation)
+                        )
+                    {
+                        tileMap[i][j] = (shallowWater[0].MaximumElevation + shallowWater[0].MinimumElevation) / 2f;
+                    }
+
+                    if(passes > 1000)
+                    {
+                        passes = 0;
+                        frames++;
+                        yield return null;
+                    }
+
+                    passes++;
+                }
+            }
+        }
+
+        passes = 0;
 
         // Place tiles
         for(int i = 0; i < MapWidth; i++)
@@ -261,7 +360,10 @@ public LandmassSize IslandSize = LandmassSize.Small;
                     tilePrefab = tilesForHeight[Random.Range(0, tilesForHeight.Count)].TilePrefab;
 
                 if(tilePrefab == null)
+                {
+                    Debug.LogWarning("No tile prefab for elevation: " + tileMap[i][j] + " (" + i + ", " + j + ")");
                     continue;
+                }
 
                 newTile = Instantiate(tilePrefab);
 
@@ -278,8 +380,6 @@ public LandmassSize IslandSize = LandmassSize.Small;
 
                 Tiles.Add(tile);
 
-                passes++;
-
                 if(passes > 1000)
                 {
                     passes = 0;
@@ -287,132 +387,8 @@ public LandmassSize IslandSize = LandmassSize.Small;
                     yield return null;
                 }
             }
-        }
 
-        int tileIndex = 0;
-
-        passes = 0;
-        
-        List<Tile> possibleTiles = new List<Tile>();
-
-        // Fix shallow water
-        while(tileIndex < Tiles.Count)
-        {
-            tile = Tiles[tileIndex];
-
-            if(tile == null)
-            {
-                Tiles.RemoveAt(tileIndex);
-                continue;
-            }
-
-            // Orphan shallow water removal
-            if(!IsAdjacentToLand(tile) && tile.Type == Tile.TileType.ShallowWater)
-            {
-                possibleTiles = GetPossibleTiles(1);
-
-                if(possibleTiles.Count > 0)
-                {
-                    tilePrefab = possibleTiles[Random.Range(0, possibleTiles.Count)].TilePrefab;
-                }
-                else
-                {
-                    continue;
-                }
-
-                newTile = Instantiate(tilePrefab);
-
-                newTile.transform.position = new Vector3(MainOffset.x * tile.Location.x, 0f, MainOffset.z * tile.Location.y) + (tile.Location.y % 2 == 0 ? Vector3.zero : AlternateOffset);
-                newTile.transform.parent = this.transform;
-
-                newTile.GetComponent<Tile>().Location = new Vector2(tile.Location.x, tile.Location.y);
-                newTile.GetComponent<Tile>().Elevation = 1;
-
-                Tiles.Remove(tile);
-                Tiles.Add(newTile.GetComponent<Tile>());
-
-                Destroy(tile.gameObject);
-
-                passes++;
-
-                if(passes > 1000)
-                {
-                    Debug.Log("Fix shallow water orphan at: " + tile.Location);
-
-                    passes = 0;
-                    frames++;
-                    yield return null;
-                }
-            }
-
-            tileIndex++;
-        }
-
-        passes = 0;
-        tileIndex = 0;
-
-        // Fix shallow water
-        while(tileIndex < Tiles.Count)
-        {
-            tile = Tiles[tileIndex];
-
-            if(tile == null)
-            {
-                Tiles.RemoveAt(tileIndex);
-                Debug.Log("Fix missing shallow water: Null tile found.");
-                continue;
-            }
-
-            // Coastal shallow water adding
-            if(IsAdjacentToLand(tile) && tile.IsWater() && tile.Type != Tile.TileType.ShallowWater)
-            {
-                possibleTiles = GetPossibleTiles(Tile.TileType.ShallowWater);
-
-                if(possibleTiles.Count > 0)
-                {
-                    tilePrefab = possibleTiles[Random.Range(0, possibleTiles.Count)].TilePrefab;
-                }
-                else
-                {
-                    Debug.Log("Fix missing shallow water: No tile replacement at: " + tile.Location);
-                    continue;
-                }
-
-                newTile = Instantiate(tilePrefab);
-
-                if(newTile == null)
-                {
-                    Debug.Log("Fix missing shallow water: No replacement tile at: " + tile.Location);
-                }
-
-                newTile.transform.position = new Vector3(MainOffset.x * tile.Location.x, 0f, MainOffset.z * tile.Location.y) + (tile.Location.y % 2 == 0 ? Vector3.zero : AlternateOffset);
-                newTile.transform.parent = this.transform;
-
-                newTile.GetComponent<Tile>().Location = new Vector2(tile.Location.x, tile.Location.y);
-                newTile.GetComponent<Tile>().Elevation = newTile.GetComponent<Tile>().MinimumElevation;
-
-                Tiles.Remove(tile);
-                Tiles.Add(newTile.GetComponent<Tile>());
-
-                Destroy(tile.gameObject);
-
-                passes++;
-
-                if(passes > 1000)
-                {
-                    Debug.Log("Fix shallow water missing at: " + tile.Location);
-
-                    passes = 0;
-                    frames++;
-                    yield return null;
-                }
-            }
-            else if(IsAdjacentToLand(tile) && tile.IsWater() && tile.Type != Tile.TileType.ShallowWater)
-            {
-                Debug.Log("Deep water tile replaced at: " + tile.Location);
-            }
-
-            tileIndex++;
+            passes++;
         }
 
         Debug.Log("Main map frames: " + frames);
@@ -510,6 +486,9 @@ public LandmassSize IslandSize = LandmassSize.Small;
     {
         switch(size)
         {
+            case "tiny":
+                CurrentSize = MapSize.Tiny;
+                break;
             case "small":
                 CurrentSize = MapSize.Small;
                 break;
@@ -588,5 +567,7 @@ public LandmassSize IslandSize = LandmassSize.Small;
         GoldHexSelection.transform.position = tile.transform.position + SelectionOffset;
 
         GM.Armies.CreateUnit(tile);
+
+        tile.SelectTile();
     }
 }

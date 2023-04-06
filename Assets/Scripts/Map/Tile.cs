@@ -94,4 +94,18 @@ public class Tile : MonoBehaviour
 
         return false;
     }
+
+    public bool IsAdjacentToLand()
+    {
+        MapGrid mg = MapGrid.GetMapGrid();
+
+        Debug.Log("Is next to land? " + mg.IsAdjacentToLand(this));
+
+        return false;
+    }
+
+    public void SelectTile()
+    {
+        IsAdjacentToLand();
+    }
 }

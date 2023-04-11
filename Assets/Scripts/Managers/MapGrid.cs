@@ -376,6 +376,8 @@ public class MapGrid : MonoBehaviour
                 {
                     tile.Location = new Vector2(i, j);
                     tile.Elevation = tileMap[i][j];
+                    MeshRenderer renderer = tile.gameObject.GetComponent<MeshRenderer>();
+                    renderer.enabled = false;
                 }
 
                 Tiles.Add(tile);
@@ -386,9 +388,10 @@ public class MapGrid : MonoBehaviour
                     frames++;
                     yield return null;
                 }
+
+                passes++;
             }
 
-            passes++;
         }
 
         Debug.Log("Main map frames: " + frames);
@@ -403,7 +406,7 @@ public class MapGrid : MonoBehaviour
 
         Debug.Log("Left Side");
 
-        for(int i = MapWidth - 1; i > MapWidth - 20; i--)
+        for(int i = MapWidth - 1; i > MapWidth - 5; i--)
             for(int j = 0; j < MapHeight; j++)
             {
                 tile = Tiles.Find(x => x.Location.x == i && x.Location.y == j);
@@ -424,15 +427,18 @@ public class MapGrid : MonoBehaviour
                     tile.Elevation = tileMap[i][j];
                     tile.IsFakeTile = true;
                     FakeTiles.Add(tile);
+
+                    MeshRenderer renderer = tile.gameObject.GetComponent<MeshRenderer>();
+                    renderer.enabled = false;
                 }
 
-                passes++;
-
-                if(passes > 1000)
+                if(passes > 100)
                 {
                     passes = 0;
                     yield return null;
                 }
+
+                passes++;
             }
 
         passes = 0;
@@ -440,7 +446,7 @@ public class MapGrid : MonoBehaviour
         Debug.Log("Right Side");
 
         // Right side
-        for(int i = 0; i < 20; i++)
+        for(int i = 0; i < 5; i++)
             for(int j = 0; j < MapHeight; j++)
             {
                 tile = Tiles.Find(x => x.Location.x == i && x.Location.y == j);
@@ -461,16 +467,26 @@ public class MapGrid : MonoBehaviour
                     tile.Elevation = tileMap[i][j];
                     tile.IsFakeTile = true;
                     FakeTiles.Add(tile);
+
+                    MeshRenderer renderer = tile.gameObject.GetComponent<MeshRenderer>();
+                    renderer.enabled = false;
                 }
 
-                passes++;
-
-                if(passes > 1000)
+                if(passes > 100)
                 {
                     passes = 0;
                     yield return null;
                 }
+
+                passes++;
             }
+
+        // TODO: Spawn Ice on top and bottom
+
+
+
+
+
 
         IsGenerating = false;
 
@@ -480,6 +496,12 @@ public class MapGrid : MonoBehaviour
         {
             GM.LoadingFinished();
         }
+    }
+
+    public void SpawnCities()
+    {
+        if(GM != null)
+            return;
     }
 
     public void SetMapSize(string size)

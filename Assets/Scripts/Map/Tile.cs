@@ -58,6 +58,15 @@ public class Tile : MonoBehaviour
 
     public bool IsFakeTile = false;
 
+    private List<MeshRenderer> Renderers = new List<MeshRenderer>();
+
+    private void Start()
+    {
+        Renderers.Clear();
+
+        Renderers.Add(this.gameObject.GetComponent<MeshRenderer>());
+    }
+
     public Tile CopyTo(GameObject newObject)
     {
         Tile newTile;
@@ -97,7 +106,7 @@ public class Tile : MonoBehaviour
 
     public bool IsAdjacentToLand()
     {
-        MapGrid mg = MapGrid.GetMapGrid();
+        MapGrid mg = MapGrid.Instance;
 
         Debug.Log("Is next to land? " + mg.IsAdjacentToLand(this));
 
@@ -107,5 +116,27 @@ public class Tile : MonoBehaviour
     public void SelectTile()
     {
         IsAdjacentToLand();
+    }
+
+    public void HideTile()
+    {
+        if(Renderers.Count <= 0)
+            return;
+
+        for(int i = 0; i < Renderers.Count; i++)
+        {
+            Renderers[i].enabled = false;
+        }
+    }
+
+    public void ShowTile()
+    {
+        if(Renderers.Count <= 0)
+            return;
+
+        for(int i = 0; i < Renderers.Count; i++)
+        {
+            Renderers[i].enabled = true;
+        }
     }
 }

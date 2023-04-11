@@ -55,6 +55,11 @@ public class GameManager : MonoBehaviour
         ShowScreen(UIScreens.MainMenu);
     }
 
+    public void ShowGameScreen()
+    {
+        ShowScreen(UIScreens.GameScreen);
+    }
+
     public void ShowScreen(UIScreens screen)
     {
         HideScreens();

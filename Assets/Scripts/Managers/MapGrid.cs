@@ -20,15 +20,18 @@ public class MapGrid : MonoBehaviour
         return _Instance;
     }
 
-    private static MapGrid _Instance
+    public static MapGrid Instance
     {
-        get 
-        {
-            return FindAnyObjectByType<MapGrid>();
-        }
+        get
+        { 
+            if(_Instance == null )
+                _Instance = FindObjectOfType<MapGrid>();
 
-        set { _Instance = value; }
+            return _Instance;
+        }
     }
+
+    private static MapGrid _Instance;
 
     public enum MapSize
     {
@@ -376,8 +379,10 @@ public class MapGrid : MonoBehaviour
                 {
                     tile.Location = new Vector2(i, j);
                     tile.Elevation = tileMap[i][j];
-                    MeshRenderer renderer = tile.gameObject.GetComponent<MeshRenderer>();
-                    renderer.enabled = false;
+
+                    //tile.HideTile();
+//                    MeshRenderer renderer = tile.gameObject.GetComponent<MeshRenderer>();
+//                    renderer.enabled = false;
                 }
 
                 Tiles.Add(tile);
@@ -428,8 +433,10 @@ public class MapGrid : MonoBehaviour
                     tile.IsFakeTile = true;
                     FakeTiles.Add(tile);
 
-                    MeshRenderer renderer = tile.gameObject.GetComponent<MeshRenderer>();
-                    renderer.enabled = false;
+                    //tile.HideTile();
+
+//                    MeshRenderer renderer = tile.gameObject.GetComponent<MeshRenderer>();
+//                    renderer.enabled = false;
                 }
 
                 if(passes > 100)
@@ -468,8 +475,10 @@ public class MapGrid : MonoBehaviour
                     tile.IsFakeTile = true;
                     FakeTiles.Add(tile);
 
-                    MeshRenderer renderer = tile.gameObject.GetComponent<MeshRenderer>();
-                    renderer.enabled = false;
+                    //tile.HideTile();
+
+//                    MeshRenderer renderer = tile.gameObject.GetComponent<MeshRenderer>();
+//                    renderer.enabled = false;
                 }
 
                 if(passes > 100)

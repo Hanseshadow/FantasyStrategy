@@ -8,6 +8,8 @@ public class GameManager : MonoBehaviour
     public bool IsInUI = true;
     public bool IsGamePaused = false;
 
+    public CameraMapMovement MainCameraMovement;
+
     // Load all the UI.  We have plenty of memory to spare.  If we don't, then this can be offloaded easily.
     public GameObject MainMenu;
     public GameObject LoadingScreen;
@@ -159,6 +161,11 @@ public class GameManager : MonoBehaviour
         IsGameStarted = true;
         IsInUI = false;
 
-        FindObjectOfType<CameraMapMovement>()?.Initialize();
+        MainCameraMovement.Initialize();
+    }
+
+    public void CameraUpdate(Vector3 position)
+    {
+        MapGenerator.CameraUpdate(position);
     }
 }

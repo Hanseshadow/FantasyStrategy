@@ -28,7 +28,7 @@ public class LerpColor : MonoBehaviour
 
     void Update()
     {
-        if(!IsLerping)
+        if(!IsLerping || !gameObject.activeSelf)
             return;
 
         LerpTime += Time.deltaTime;

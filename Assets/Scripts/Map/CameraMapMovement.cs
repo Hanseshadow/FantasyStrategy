@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor.PackageManager;
 using UnityEngine;
 
 public class CameraMapMovement : MonoBehaviour
@@ -17,6 +18,9 @@ public class CameraMapMovement : MonoBehaviour
     float MouseSensitivity = 2f;
     float KeySensitivity = 1f;
 
+    RaycastHit Hit;
+    Transform MainCameraTransform;
+
     void Start()
     {
         GM = FindObjectOfType<GameManager>();
@@ -27,6 +31,10 @@ public class CameraMapMovement : MonoBehaviour
         MapSizeInMeters = GM.MapGenerator.GetMapSizeInMeters();
 
         Debug.Log("MapSizeInMeters: " + MapSizeInMeters);
+
+        MainCameraTransform = Camera.main.transform;
+
+        CameraUpdate();
     }
 
     void Update()
@@ -91,5 +99,17 @@ public class CameraMapMovement : MonoBehaviour
 
         transform.position = new Vector3(cameraPositionX, 50f, cameraPositionY);
         LastPosition = transform.position;
+
+        CameraUpdate();
+    }
+
+    public void CameraUpdate()
+    {
+        Physics.Raycast(MainCameraTransform.position, MainCameraTransform.forward, out Hit, 100.0f);
+
+        if(Hit.collider != null && Vector3.Distance(Hit.point, Camera.main.transform.position) > 50f)
+        {
+            GM.CameraUpdate(Hit.point);
+        }
     }
 }

@@ -60,7 +60,9 @@ public class Tile : MonoBehaviour
 
     private List<MeshRenderer> Renderers = new List<MeshRenderer>();
 
-    private void Start()
+    public bool RenderersEnabled = false;
+
+    private void Awake()
     {
         Renderers.Clear();
 
@@ -127,6 +129,8 @@ public class Tile : MonoBehaviour
         {
             Renderers[i].enabled = false;
         }
+
+        RenderersEnabled = false;
     }
 
     public void ShowTile()
@@ -138,5 +142,7 @@ public class Tile : MonoBehaviour
         {
             Renderers[i].enabled = true;
         }
+
+        RenderersEnabled = true;
     }
 }

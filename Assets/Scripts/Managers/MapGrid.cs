@@ -23,8 +23,8 @@ public class MapGrid : MonoBehaviour
     public static MapGrid Instance
     {
         get
-        { 
-            if(_Instance == null )
+        {
+            if(_Instance == null)
                 _Instance = FindObjectOfType<MapGrid>();
 
             return _Instance;
@@ -59,7 +59,7 @@ public class MapGrid : MonoBehaviour
     };
 
     [HideInInspector]
-    public static List<Vector2> YIsOdd  = new List<Vector2>() { new Vector2( 0, 1) /* NW */, new Vector2(0, 2) /* N */, new Vector2(1, 1) /* NE */,
+    public static List<Vector2> YIsOdd = new List<Vector2>() { new Vector2( 0, 1) /* NW */, new Vector2(0, 2) /* N */, new Vector2(1, 1) /* NE */,
         new Vector2( 0, -1) /* SW */, new Vector2(0, -2) /* S */, new Vector2(1, -1) /* SE */
     };
 
@@ -97,6 +97,8 @@ public class MapGrid : MonoBehaviour
     private Vector3 SelectionOffset = new Vector3(0, 0.1f, 0);
 
     private GameManager GM;
+
+    private Vector3 LastPosition = Vector3.zero;
 
     void Start()
     {
@@ -380,9 +382,9 @@ public class MapGrid : MonoBehaviour
                     tile.Location = new Vector2(i, j);
                     tile.Elevation = tileMap[i][j];
 
-                    //tile.HideTile();
-//                    MeshRenderer renderer = tile.gameObject.GetComponent<MeshRenderer>();
-//                    renderer.enabled = false;
+                    tile.HideTile();
+                    //                    MeshRenderer renderer = tile.gameObject.GetComponent<MeshRenderer>();
+                    //                    renderer.enabled = false;
                 }
 
                 Tiles.Add(tile);
@@ -433,10 +435,10 @@ public class MapGrid : MonoBehaviour
                     tile.IsFakeTile = true;
                     FakeTiles.Add(tile);
 
-                    //tile.HideTile();
+                    tile.HideTile();
 
-//                    MeshRenderer renderer = tile.gameObject.GetComponent<MeshRenderer>();
-//                    renderer.enabled = false;
+                    //                    MeshRenderer renderer = tile.gameObject.GetComponent<MeshRenderer>();
+                    //                    renderer.enabled = false;
                 }
 
                 if(passes > 100)
@@ -475,10 +477,10 @@ public class MapGrid : MonoBehaviour
                     tile.IsFakeTile = true;
                     FakeTiles.Add(tile);
 
-                    //tile.HideTile();
+                    tile.HideTile();
 
-//                    MeshRenderer renderer = tile.gameObject.GetComponent<MeshRenderer>();
-//                    renderer.enabled = false;
+                    //                    MeshRenderer renderer = tile.gameObject.GetComponent<MeshRenderer>();
+                    //                    renderer.enabled = false;
                 }
 
                 if(passes > 100)
@@ -600,5 +602,37 @@ public class MapGrid : MonoBehaviour
         GM.Armies.CreateUnit(tile);
 
         tile.SelectTile();
+    }
+
+    public void CameraUpdate(Vector3 position)
+    {
+        if(Vector3.Distance(position, LastPosition) < 1f)
+            return;
+
+        LastPosition = position;
+
+        List<Tile> tiles = new List<Tile>();
+
+        tiles = Tiles.FindAll(t => Vector3.Distance(t.gameObject.transform.position, position) < 120f && !t.RenderersEnabled);
+
+        foreach(Tile tile in tiles)
+        {
+            if(tile != null)
+            {
+                tile.ShowTile();
+            }
+        }
+
+        tiles.Clear();
+
+        tiles = Tiles.FindAll(t => Vector3.Distance(t.gameObject.transform.position, position) > 120f && t.RenderersEnabled);
+
+        foreach(Tile tile in tiles)
+        {
+            if(tile != null)
+            {
+                tile.HideTile();
+            }
+        }
     }
 }

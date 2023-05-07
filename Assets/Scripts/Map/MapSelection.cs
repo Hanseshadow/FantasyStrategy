@@ -33,7 +33,9 @@ public class MapSelection : MonoBehaviour
 
                 if(tileCollider != null && tileCollider.ParentTile != null)
                 {
-                    Debug.Log("Clicked on tile: " + tileCollider.ParentTile.Type.ToString() + " Loc: " + tileCollider.ParentTile.Location.ToString());
+                    Debug.Log("Clicked on tile: " + tileCollider.ParentTile.Type.ToString() + " Loc: " + tileCollider.ParentTile.Location.ToString()
+                        + " World Position: " + tileCollider.gameObject.transform.position
+                        );
 
                     GM.MapGenerator.SelectTile(tileCollider.ParentTile);
                 }

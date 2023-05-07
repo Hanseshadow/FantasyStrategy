@@ -1,6 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEditor.PackageManager;
 using UnityEngine;
 
 public class CameraMapMovement : MonoBehaviour
@@ -46,6 +43,8 @@ public class CameraMapMovement : MonoBehaviour
         fov -= Input.GetAxis("Mouse ScrollWheel") * Sensitivity;
         fov = Mathf.Clamp(fov, MinFov, MaxFov);
         Camera.main.fieldOfView = fov;
+
+        CameraUpdate();
 
         // If you don't press a key to pan, then don't do anything.
         if(!Input.GetMouseButton(1) && !Input.GetKey(KeyCode.W) && !Input.GetKey(KeyCode.A) && !Input.GetKey(KeyCode.S) && !Input.GetKey(KeyCode.D))
@@ -99,13 +98,11 @@ public class CameraMapMovement : MonoBehaviour
 
         transform.position = new Vector3(cameraPositionX, 50f, cameraPositionY);
         LastPosition = transform.position;
-
-        CameraUpdate();
     }
 
     public void CameraUpdate()
     {
-        Physics.Raycast(MainCameraTransform.position, MainCameraTransform.forward, out Hit, 100.0f);
+        Physics.Raycast(MainCameraTransform.position, MainCameraTransform.forward, out Hit, 120.0f);
 
         if(Hit.collider != null && Vector3.Distance(Hit.point, Camera.main.transform.position) > 50f)
         {

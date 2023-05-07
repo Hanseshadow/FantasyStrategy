@@ -31,6 +31,10 @@ public class Tile : MonoBehaviour
         Dungeon,
         WizardTower,
         LeyLine,
+        Lair,
+        Nest,
+        Road,
+        Cursed,
     }
 
     public enum MovementType
@@ -44,7 +48,7 @@ public class Tile : MonoBehaviour
     }
 
     public TileType Type = TileType.None;
-    public Overlay Feature = Overlay.None;
+    public List<Overlay> Features = new List<Overlay>();
     public MovementType Movement = MovementType.None;
 
     public float MinimumElevation = 0f;
@@ -58,7 +62,11 @@ public class Tile : MonoBehaviour
 
     public bool IsFakeTile = false;
 
+    public Tile LinkedTile = null;
+
     private List<MeshRenderer> Renderers = new List<MeshRenderer>();
+
+    private List<Unit> Units = new List<Unit>();
 
     public bool RenderersEnabled = false;
 
@@ -79,7 +87,7 @@ public class Tile : MonoBehaviour
             newTile = newObject.GetComponent<Tile>();
 
         newTile.Type = Type;
-        newTile.Feature = Feature;
+        newTile.Features = Features;
         newTile.Movement = Movement;
         newTile.MinimumElevation = MinimumElevation;
         newTile.MaximumElevation = MaximumElevation;
@@ -87,8 +95,38 @@ public class Tile : MonoBehaviour
         newTile.Location = Location;
         newTile.Elevation = Elevation;
         newTile.IsFakeTile = IsFakeTile;
+        newTile.LinkedTile = LinkedTile;
 
         return newTile;
+    }
+
+    public float GetMovementCost()
+    {
+        float cost = 0f;
+
+        if(Features.Contains(Overlay.Road))
+            cost += -0.5f;
+
+        if(Features.Contains(Overlay.Cursed))
+            cost += 2f;
+
+        switch(Movement)
+        {
+            case MovementType.None:
+                return 0f + cost;
+            case MovementType.Clear:
+                return 1f + cost;
+            case MovementType.Rough:
+                return 2f + cost;
+            case MovementType.Mountain:
+                return 5f + cost;
+            case MovementType.Water:
+                return 1f + cost;
+            case MovementType.Turbulent:
+                return 2f + cost;
+            default:
+                return 1f + cost;
+        }
     }
 
     public bool IsWater()
@@ -108,9 +146,7 @@ public class Tile : MonoBehaviour
 
     public bool IsAdjacentToLand()
     {
-        MapGrid mg = MapGrid.Instance;
-
-        Debug.Log("Is next to land? " + mg.IsAdjacentToLand(this));
+        Debug.Log("Is next to land? " + MapGrid.Instance.IsAdjacentToLand(this));
 
         return false;
     }
@@ -118,6 +154,22 @@ public class Tile : MonoBehaviour
     public void SelectTile()
     {
         IsAdjacentToLand();
+    }
+
+    public bool IsHidden()
+    {
+        if(Renderers.Count <= 0)
+            return true;
+
+        for(int i = 0; i < Renderers.Count; i++)
+        {
+            if(Renderers[i].enabled)
+                return true;
+            else
+                return false;
+        }
+
+        return false;
     }
 
     public void HideTile()
@@ -131,6 +183,9 @@ public class Tile : MonoBehaviour
         }
 
         RenderersEnabled = false;
+
+        if(LinkedTile != null && LinkedTile.IsFakeTile && LinkedTile != this && !LinkedTile.IsHidden())
+            LinkedTile.HideTile();
     }
 
     public void ShowTile()
@@ -144,5 +199,8 @@ public class Tile : MonoBehaviour
         }
 
         RenderersEnabled = true;
+
+        if(LinkedTile != null && LinkedTile.IsFakeTile && LinkedTile != this && LinkedTile.IsHidden())
+            LinkedTile.ShowTile();
     }
 }

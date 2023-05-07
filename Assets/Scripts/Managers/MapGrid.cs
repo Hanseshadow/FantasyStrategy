@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using Unity.VisualScripting;
 using UnityEngine;
 
@@ -15,6 +16,8 @@ public class MapData
 
 public class MapGrid : MonoBehaviour
 {
+    private float LastMouseUpdate = 0f;
+
     public static MapGrid GetMapGrid()
     {
         return _Instance;
@@ -54,16 +57,34 @@ public class MapGrid : MonoBehaviour
     public LandmassSize IslandSize = LandmassSize.Small;
 
     [HideInInspector]
-    public static List<Vector2> YIsEven = new List<Vector2>() { new Vector2(-1, 1) /* NW */, new Vector2(0, 2) /* N */, new Vector2(0, 1) /* NE */,
-        new Vector2(-1, -1) /* SW */, new Vector2(0, -2) /* S */, new Vector2(0, -1) /* SE */
+    public static List<Vector2> YIsEven = new List<Vector2>() 
+    { 
+        new Vector2(-1, 1), /* NW */
+        new Vector2(0, 2),  /* N */
+        new Vector2(0, 1),  /* NE */
+        new Vector2(-1, -1),/* SW */
+        new Vector2(0, -2), /* S */
+        new Vector2(0, -1)  /* SE */
     };
 
     [HideInInspector]
-    public static List<Vector2> YIsOdd = new List<Vector2>() { new Vector2( 0, 1) /* NW */, new Vector2(0, 2) /* N */, new Vector2(1, 1) /* NE */,
-        new Vector2( 0, -1) /* SW */, new Vector2(0, -2) /* S */, new Vector2(1, -1) /* SE */
+    public static List<Vector2> YIsOdd = new List<Vector2>() 
+    { 
+        new Vector2(0, 1),  /* NW */
+        new Vector2(0, 2),  /* N */
+        new Vector2(1, 1),  /* NE */
+        new Vector2(0, -1), /* SW */
+        new Vector2(0, -2), /* S */
+        new Vector2(1, -1)  /* SE */
     };
 
-    List<Vector2> Sizes;
+    List<Vector2> Sizes = new List<Vector2>()
+    {
+        new Vector2(50, 50),
+        new Vector2(100, 100),
+        new Vector2(200, 200),
+        new Vector2(300, 300)
+    };
 
     public bool Resize = false;
 
@@ -91,8 +112,8 @@ public class MapGrid : MonoBehaviour
 
     private int MapHeight = 0;
     private int MapWidth = 0;
-    private Vector3 MainOffset;
-    private Vector3 AlternateOffset;
+    private Vector3 MainOffset = new Vector3(15f, 0f, 5f);
+    private Vector3 AlternateOffset = new Vector3(7.5f, 0f, 0f);
 
     private Vector3 SelectionOffset = new Vector3(0, 0.1f, 0);
 
@@ -125,17 +146,6 @@ public class MapGrid : MonoBehaviour
 
     private void Initialize()
     {
-        Sizes = new List<Vector2>()
-        {
-            new Vector2(50, 50),
-            new Vector2(100, 100),
-            new Vector2(200, 200),
-            new Vector2(300, 300)
-        };
-
-        MainOffset = new Vector3(15f, 0f, 5f);
-        AlternateOffset = new Vector3(7.5f, 0f, 0f);
-
         Tiles = new List<Tile>();
         FakeTiles = new List<Tile>();
 
@@ -383,8 +393,6 @@ public class MapGrid : MonoBehaviour
                     tile.Elevation = tileMap[i][j];
 
                     tile.HideTile();
-                    //                    MeshRenderer renderer = tile.gameObject.GetComponent<MeshRenderer>();
-                    //                    renderer.enabled = false;
                 }
 
                 Tiles.Add(tile);
@@ -413,7 +421,7 @@ public class MapGrid : MonoBehaviour
 
         Debug.Log("Left Side");
 
-        for(int i = MapWidth - 1; i > MapWidth - 5; i--)
+        for(int i = MapWidth - 1; i > MapWidth - 7; i--)
             for(int j = 0; j < MapHeight; j++)
             {
                 tile = Tiles.Find(x => x.Location.x == i && x.Location.y == j);
@@ -426,19 +434,20 @@ public class MapGrid : MonoBehaviour
                 newTile.transform.position = new Vector3(MainOffset.x * (i - MapWidth), 0f, MainOffset.z * j) + (j % 2 == 0 ? Vector3.zero : AlternateOffset);
                 newTile.transform.parent = FakeTilesParent.transform;
 
-                tile = newTile.GetComponent<Tile>();
+                Tile fakeTile = newTile.GetComponent<Tile>();
 
-                if(tile != null)
+                if(fakeTile != null)
                 {
-                    tile.Location = new Vector2(i, j);
-                    tile.Elevation = tileMap[i][j];
-                    tile.IsFakeTile = true;
-                    FakeTiles.Add(tile);
+                    fakeTile.Location = new Vector2(i, j);
+                    fakeTile.Elevation = tileMap[i][j];
+                    fakeTile.IsFakeTile = true;
 
-                    tile.HideTile();
+                    fakeTile.LinkedTile = tile;
+                    tile.LinkedTile = fakeTile;
 
-                    //                    MeshRenderer renderer = tile.gameObject.GetComponent<MeshRenderer>();
-                    //                    renderer.enabled = false;
+                    FakeTiles.Add(fakeTile);
+
+                    fakeTile.HideTile();
                 }
 
                 if(passes > 100)
@@ -455,7 +464,7 @@ public class MapGrid : MonoBehaviour
         Debug.Log("Right Side");
 
         // Right side
-        for(int i = 0; i < 5; i++)
+        for(int i = 0; i < 7; i++)
             for(int j = 0; j < MapHeight; j++)
             {
                 tile = Tiles.Find(x => x.Location.x == i && x.Location.y == j);
@@ -468,19 +477,20 @@ public class MapGrid : MonoBehaviour
                 newTile.transform.position = new Vector3(MainOffset.x * (i + MapWidth), 0f, MainOffset.z * j) + (j % 2 == 0 ? Vector3.zero : AlternateOffset);
                 newTile.transform.parent = FakeTilesParent.transform;
 
-                tile = newTile.GetComponent<Tile>();
+                Tile fakeTile = newTile.GetComponent<Tile>();
 
-                if(tile != null)
+                if(fakeTile != null)
                 {
-                    tile.Location = new Vector2(i, j);
-                    tile.Elevation = tileMap[i][j];
-                    tile.IsFakeTile = true;
-                    FakeTiles.Add(tile);
+                    fakeTile.Location = new Vector2(i, j);
+                    fakeTile.Elevation = tileMap[i][j];
+                    fakeTile.IsFakeTile = true;
 
-                    tile.HideTile();
+                    fakeTile.LinkedTile = tile;
+                    tile.LinkedTile = fakeTile;
 
-                    //                    MeshRenderer renderer = tile.gameObject.GetComponent<MeshRenderer>();
-                    //                    renderer.enabled = false;
+                    FakeTiles.Add(fakeTile);
+
+                    fakeTile.HideTile();
                 }
 
                 if(passes > 100)
@@ -513,8 +523,16 @@ public class MapGrid : MonoBehaviour
     {
         if(GM != null)
             return;
+
+
     }
 
+    public List<Tile> FindLandmass()
+    {
+        return null;
+    }
+
+    // UI Setup Screen call
     public void SetMapSize(string size)
     {
         switch(size)
@@ -534,6 +552,7 @@ public class MapGrid : MonoBehaviour
         }
     }
 
+    // UI Setup Screen call
     public void SetLandmassSize(string size)
     {
         switch(size)
@@ -604,35 +623,84 @@ public class MapGrid : MonoBehaviour
         tile.SelectTile();
     }
 
+    // TODO: Brute force sucks.  Make this better.
     public void CameraUpdate(Vector3 position)
     {
-        if(Vector3.Distance(position, LastPosition) < 1f)
+        if(Vector3.Distance(position, LastPosition) < 5f)
             return;
+
+        LastMouseUpdate += Time.deltaTime;
+        
+        // 50ms update
+        if(LastMouseUpdate < 0.05f)
+            return;
+
+        LastMouseUpdate = 0f;
 
         LastPosition = position;
 
         List<Tile> tiles = new List<Tile>();
 
-        tiles = Tiles.FindAll(t => Vector3.Distance(t.gameObject.transform.position, position) < 120f && !t.RenderersEnabled);
+        tiles = Tiles.FindAll(t => Vector3.Distance(t.gameObject.transform.position, position) < 200f && !t.RenderersEnabled);
 
         foreach(Tile tile in tiles)
         {
             if(tile != null)
             {
                 tile.ShowTile();
+
+                if(tile.LinkedTile != null && tile.LinkedTile.IsHidden())
+                    tile.LinkedTile.ShowTile();
             }
         }
 
         tiles.Clear();
 
-        tiles = Tiles.FindAll(t => Vector3.Distance(t.gameObject.transform.position, position) > 120f && t.RenderersEnabled);
+        tiles = FakeTiles.FindAll(t => Vector3.Distance(t.gameObject.transform.position, position) < 200f && !t.RenderersEnabled);
+
+        foreach(Tile tile in tiles)
+        {
+            if(tile != null && tile.LinkedTile.IsHidden())
+            {
+                tile.ShowTile();
+
+                if(tile.LinkedTile != null && tile.LinkedTile.IsHidden())
+                    tile.LinkedTile.ShowTile();
+
+            }
+        }
+
+        tiles.Clear();
+
+        tiles = Tiles.FindAll(t => Vector3.Distance(t.gameObject.transform.position, position) > 200f && t.RenderersEnabled);
 
         foreach(Tile tile in tiles)
         {
             if(tile != null)
             {
                 tile.HideTile();
+
+                if(tile.LinkedTile != null && !tile.LinkedTile.IsHidden())
+                    tile.LinkedTile.HideTile();
             }
         }
+
+        tiles.Clear();
+
+        tiles = FakeTiles.FindAll(t => Vector3.Distance(t.gameObject.transform.position, position) > 200f && t.RenderersEnabled);
+
+        foreach(Tile tile in tiles)
+        {
+            if(tile != null && !tile.LinkedTile.IsHidden())
+            {
+                tile.HideTile();
+
+
+                if(tile.LinkedTile != null && !tile.LinkedTile.IsHidden())
+                    tile.LinkedTile.HideTile();
+            }
+        }
+
+        tiles.Clear();
     }
 }
